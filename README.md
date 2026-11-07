@@ -5,9 +5,9 @@ This project controls an Emerson / Vertiv R48 power supply over the CAN bus usin
 ## Features
 
 - Initializes the PSU on CAN bus
-- Sets output voltage
+- Sets output voltage, including runtime changes from the serial monitor
 - Enables AC power
-- Allows runtime amperage changes from the serial monitor
+- Calibrates runtime current commands against measured output current
 
 ## Hardware
 
@@ -19,23 +19,24 @@ This project controls an Emerson / Vertiv R48 power supply over the CAN bus usin
 
 1. Upload the firmware to the board.
 2. Open the serial monitor at 9600 baud.
-3. Send a command to change the current, for example:
-   - `A30` to set 30 A
-   - `I12.5` to set 12.5 A
-4. The PSU current is updated immediately if the value is valid.
+3. Enter the desired measured current in amps, or send a voltage command:
+   - `10` targets 10 A measured output (the calibration interpolates the PSU setting)
+   - `A10` and `I10` are also accepted as current commands
+   - `V58.5` to set 58.5 V
+4. The current target must be within the calibrated measured range of 4.15-24.0 A. Values between calibration points are linearly interpolated. Voltage commands accept 32.0-58.5 V and are rounded to the nearest 0.1 V.
 
 Example:
 
 ```text
-Usage: send A<value> to change amperage, e.g. A30 or I12.5
-Set amperage to 30.00 A
+Enter a measured current in amps (e.g. 10), or V<volts> (e.g. V58.5).
+Target measured current: 10.00 A; serial setting: 12.24 A
 ```
 
 ## Notes
 
-- The valid current range depends on the PSU model and configuration.
-- Commands outside the supported range are rejected.
-- The code starts at a default setting of 30 A and can be adjusted at runtime.
+- The calibration points are stored in `src/CurrentCalibration.cpp`. Recalibrate for your PSU and measurement setup.
+- Current targets outside the calibration range are rejected rather than extrapolated.
+- The code starts at 6 A and 58.5 V; both can be adjusted at runtime.
 
 ## Build
 
