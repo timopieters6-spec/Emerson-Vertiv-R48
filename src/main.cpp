@@ -4,7 +4,9 @@
 #include <SPI.h>
 #include <VertivPsu.h>
 
-#define CAN0_CS 53
+// Pin assignments
+const int CAN0_CS_PIN = 53;
+const int CAN0_INT_PIN = 9;
 
 // This example uses the PSU over CAN bus and allows changing the output amperage
 // from the serial monitor. Send commands in this format:
@@ -28,11 +30,11 @@ void handleSerialCommands() {
         return;
     }
 
-    if (command.startsWith("A") || command.startsWith("AMP") || command.startsWith("I")) {
+    if (command.startsWith("A") || command.startsWith("I")) {
         float newAmps = command.substring(1).toFloat();
         if (newAmps > 0.0f && newAmps <= 60.0f) {
             targetAmps = newAmps;
-            charger->setCAmps(targetAmps);
+            charger->setCAmps(targetAmps);9
             Serial.print("Set amperage to ");
             Serial.print(targetAmps);
             Serial.println(" A");
@@ -47,9 +49,9 @@ void setup() {
     Serial.println("alive");
     Serial.println("Usage: send A<value> to change amperage, e.g. A30 or I12.5");
 
-    charger = new VertivPSU(SS);
+    charger = new VertivPSU(CAN0_CS_PIN);
     Serial.println("init Can0");
-    charger->init(9);
+    charger->init(CAN0_INT_PIN);
 
     // Start with a safe default current and then allow runtime changes from the serial monitor.
     charger->setCAmps(DEFAULT_AMPS);
